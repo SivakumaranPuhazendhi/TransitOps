@@ -15,6 +15,25 @@ const router = express.Router();
 // Apply authentication to all routes in this file
 router.use(authenticate);
 
+// --- VEHICLE REGISTRY ENDPOINTS ---
+router.post('/vehicles', authorizeRoles('Fleet Manager'), asyncHandler(async (req, res) => {
+  const { make, model, licensePlate, maxCapacityKg, status } = req.body;
+  const vehicle = await prisma.vehicle.create({
+    data: { make, model, licensePlate, maxCapacityKg: Number(maxCapacityKg), status: status || 'Available' }
+  });
+  res.json(vehicle);
+}));
+
+router.put('/vehicles/:id', authorizeRoles('Fleet Manager'), asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { make, model, licensePlate, maxCapacityKg, status } = req.body;
+  const vehicle = await prisma.vehicle.update({
+    where: { id: Number(id) },
+    data: { make, model, licensePlate, maxCapacityKg: Number(maxCapacityKg), status }
+  });
+  res.json(vehicle);
+}));
+
 // Get all vehicles
 router.get('/vehicles', asyncHandler(async (req, res) => {
   const vehicles = await prisma.vehicle.findMany();
@@ -51,6 +70,59 @@ router.get('/vehicles/map', authorizeRoles('Fleet Manager'), asyncHandler(async 
     WHERE v."lastLocation" IS NOT NULL
   `;
   res.json(mapData);
+}));
+
+// --- DRIVER REGISTRY ENDPOINTS ---
+router.post('/drivers', authorizeRoles('Fleet Manager'), asyncHandler(async (req, res) => {
+  const { name, email, password, licenseNumber, licenseExpiry, status } = req.body;
+  
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: password || 'password123',
+      role: 'Driver'
+    }
+  });
+
+  const driver = await prisma.driver.create({
+    data: {
+      userId: user.id,
+      licenseNumber,
+      licenseExpiry: new Date(licenseExpiry),
+      status: status || 'Available'
+    },
+    include: { user: true }
+  });
+
+  res.json(driver);
+}));
+
+router.put('/drivers/:id', authorizeRoles('Fleet Manager'), asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, email, licenseNumber, licenseExpiry, status } = req.body;
+  
+  const driver = await prisma.driver.findUnique({ where: { id: Number(id) } });
+  if (!driver) throw new Error('Driver not found');
+
+  if (name || email) {
+    await prisma.user.update({
+      where: { id: driver.userId },
+      data: { name, email }
+    });
+  }
+
+  const updatedDriver = await prisma.driver.update({
+    where: { id: Number(id) },
+    data: {
+      licenseNumber,
+      licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : undefined,
+      status
+    },
+    include: { user: true }
+  });
+
+  res.json(updatedDriver);
 }));
 
 // Get all drivers

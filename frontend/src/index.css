@@ -226,10 +226,15 @@
   transform: translateX(-50%);
 }
 
-/* Custom select override — hide native arrow on selects we style ourselves */
+/* Custom select override */
 select.styled {
   appearance: none;
   -webkit-appearance: none;
+}
+
+select option {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
 }
 
 /* Number font */

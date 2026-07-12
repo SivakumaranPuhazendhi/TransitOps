@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Truck, Users, MapPin, Wrench, DollarSign, Moon, Sun, LogOut, Bell, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Home, Truck, Users, MapPin, Wrench, DollarSign, Moon, Sun, LogOut, Bell, ShieldCheck, ChevronRight, Database } from 'lucide-react';
 import { useState, useEffect, useContext } from 'react';
 import Trips from './pages/Trips';
 import Dashboard from './pages/Dashboard';
@@ -10,6 +10,7 @@ import AuditLog from './pages/AuditLog';
 import Login from './pages/Login';
 import MyTrips from './pages/MyTrips';
 import FuelExpenses from './pages/FuelExpenses';
+import FleetRegistry from './pages/FleetRegistry';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { io } from 'socket.io-client';
@@ -164,6 +165,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           {hasRole(['Fleet Manager', 'Financial Analyst', 'Safety Officer']) && <SidebarItem to="/maintenance" icon={Wrench} label="Maintenance" color={getRoleColor()} />}
           {hasRole(['Fleet Manager', 'Safety Officer']) && <SidebarItem to="/audit" icon={ShieldCheck} label="Audit Log" color={getRoleColor()} />}
           {hasRole(['Fleet Manager', 'Financial Analyst']) && <SidebarItem to="/expenses" icon={DollarSign} label="Fuel & Expenses" color={getRoleColor()} />}
+          {hasRole(['Fleet Manager']) && <SidebarItem to="/registry" icon={Database} label="Fleet Registry" color={getRoleColor()} />}
         </nav>
 
         {/* Bottom */}
@@ -261,6 +263,7 @@ function App() {
                 <Route path="/maintenance" element={<ProtectedRoute roles={['Fleet Manager', 'Safety Officer', 'Financial Analyst']}><Maintenance /></ProtectedRoute>} />
                 <Route path="/audit" element={<ProtectedRoute roles={['Fleet Manager', 'Safety Officer']}><AuditLog /></ProtectedRoute>} />
                 <Route path="/expenses" element={<ProtectedRoute roles={['Fleet Manager', 'Financial Analyst']}><FuelExpenses /></ProtectedRoute>} />
+                <Route path="/registry" element={<ProtectedRoute roles={['Fleet Manager']}><FleetRegistry /></ProtectedRoute>} />
               </Routes>
             </Layout>
           } />

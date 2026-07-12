@@ -1,223 +1,147 @@
-transitops/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   ├── db.js                      # MongoDB connection
-│   │   │   ├── env.js                     # Env variable loader/validator
-│   │   │   └── constants.js               # Enums: VehicleStatus, DriverStatus, TripStatus, Roles
-│   │   │
-│   │   ├── models/
-│   │   │   ├── User.model.js
-│   │   │   ├── Role.model.js
-│   │   │   ├── Vehicle.model.js
-│   │   │   ├── Driver.model.js
-│   │   │   ├── Trip.model.js
-│   │   │   ├── MaintenanceLog.model.js
-│   │   │   ├── FuelLog.model.js
-│   │   │   └── Expense.model.js
-│   │   │
-│   │   ├── controllers/
-│   │   │   ├── auth.controller.js
-│   │   │   ├── dashboard.controller.js
-│   │   │   ├── vehicle.controller.js
-│   │   │   ├── driver.controller.js
-│   │   │   ├── trip.controller.js
-│   │   │   ├── maintenance.controller.js
-│   │   │   ├── fuel.controller.js
-│   │   │   ├── expense.controller.js
-│   │   │   └── report.controller.js
-│   │   │
-│   │   ├── routes/
-│   │   │   ├── index.js                   # Combines all route modules
-│   │   │   ├── auth.routes.js
-│   │   │   ├── dashboard.routes.js
-│   │   │   ├── vehicle.routes.js
-│   │   │   ├── driver.routes.js
-│   │   │   ├── trip.routes.js
-│   │   │   ├── maintenance.routes.js
-│   │   │   ├── fuel.routes.js
-│   │   │   ├── expense.routes.js
-│   │   │   └── report.routes.js
-│   │   │
-│   │   ├── middleware/
-│   │   │   ├── auth.middleware.js         # JWT verification
-│   │   │   ├── rbac.middleware.js         # Role-based access control
-│   │   │   ├── errorHandler.middleware.js
-│   │   │   ├── validate.middleware.js     # Joi/Zod request validation
-│   │   │   └── asyncHandler.js
-│   │   │
-│   │   ├── services/
-│   │   │   ├── auth.service.js
-│   │   │   ├── vehicle.service.js
-│   │   │   ├── driver.service.js
-│   │   │   ├── trip.service.js            # Dispatch/complete/cancel business logic
-│   │   │   ├── maintenance.service.js     # Status transition logic
-│   │   │   ├── fuel.service.js
-│   │   │   ├── expense.service.js
-│   │   │   ├── report.service.js          # ROI, utilization, efficiency calc
-│   │   │   └── email.service.js           # License expiry reminders (bonus)
-│   │   │
-│   │   ├── validators/
-│   │   │   ├── auth.validator.js
-│   │   │   ├── vehicle.validator.js
-│   │   │   ├── driver.validator.js
-│   │   │   ├── trip.validator.js
-│   │   │   └── maintenance.validator.js
-│   │   │
-│   │   ├── utils/
-│   │   │   ├── apiResponse.js
-│   │   │   ├── apiError.js
-│   │   │   ├── csvExporter.js
-│   │   │   ├── pdfExporter.js             # Bonus
-│   │   │   └── logger.js
-│   │   │
-│   │   ├── jobs/
-│   │   │   └── licenseExpiryCron.js       # Bonus: scheduled email reminders
-│   │   │
-│   │   ├── app.js                         # Express app setup
-│   │   └── server.js                      # Entry point
-│   │
-│   ├── tests/
-│   │   ├── unit/
-│   │   │   ├── trip.service.test.js
-│   │   │   └── maintenance.service.test.js
-│   │   └── integration/
-│   │       ├── auth.test.js
-│   │       └── trip.test.js
-│   │
-│   ├── .env
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── package.json
-│   └── seed.js                            # Seed sample vehicles/drivers/users
-│
-├── frontend/
-│   ├── public/
-│   │   ├── favicon.ico
-│   │   └── index.html
-│   │
-│   ├── src/
-│   │   ├── api/
-│   │   │   ├── axiosInstance.js           # Base axios config + interceptors
-│   │   │   ├── auth.api.js
-│   │   │   ├── vehicle.api.js
-│   │   │   ├── driver.api.js
-│   │   │   ├── trip.api.js
-│   │   │   ├── maintenance.api.js
-│   │   │   ├── fuel.api.js
-│   │   │   ├── expense.api.js
-│   │   │   └── report.api.js
-│   │   │
-│   │   ├── app/
-│   │   │   ├── store.js                   # Redux store / Zustand store
-│   │   │   └── rootReducer.js
-│   │   │
-│   │   ├── features/
-│   │   │   ├── auth/
-│   │   │   │   ├── authSlice.js
-│   │   │   │   ├── LoginPage.jsx
-│   │   │   │   └── ProtectedRoute.jsx
-│   │   │   │
-│   │   │   ├── dashboard/
-│   │   │   │   ├── DashboardPage.jsx
-│   │   │   │   ├── KpiCard.jsx
-│   │   │   │   └── DashboardFilters.jsx
-│   │   │   │
-│   │   │   ├── vehicles/
-│   │   │   │   ├── VehicleListPage.jsx
-│   │   │   │   ├── VehicleFormModal.jsx
-│   │   │   │   ├── VehicleDetailsPage.jsx
-│   │   │   │   └── vehicleSlice.js
-│   │   │   │
-│   │   │   ├── drivers/
-│   │   │   │   ├── DriverListPage.jsx
-│   │   │   │   ├── DriverFormModal.jsx
-│   │   │   │   ├── DriverDetailsPage.jsx
-│   │   │   │   └── driverSlice.js
-│   │   │   │
-│   │   │   ├── trips/
-│   │   │   │   ├── TripListPage.jsx
-│   │   │   │   ├── TripFormModal.jsx      # Source/dest/vehicle/driver/cargo select
-│   │   │   │   ├── TripDetailsPage.jsx
-│   │   │   │   └── tripSlice.js
-│   │   │   │
-│   │   │   ├── maintenance/
-│   │   │   │   ├── MaintenanceListPage.jsx
-│   │   │   │   ├── MaintenanceFormModal.jsx
-│   │   │   │   └── maintenanceSlice.js
-│   │   │   │
-│   │   │   ├── fuelExpense/
-│   │   │   │   ├── FuelLogPage.jsx
-│   │   │   │   ├── ExpenseLogPage.jsx
-│   │   │   │   ├── FuelFormModal.jsx
-│   │   │   │   ├── ExpenseFormModal.jsx
-│   │   │   │   └── fuelExpenseSlice.js
-│   │   │   │
-│   │   │   └── reports/
-│   │   │       ├── ReportsPage.jsx
-│   │   │       ├── FuelEfficiencyChart.jsx
-│   │   │       ├── UtilizationChart.jsx
-│   │   │       ├── RoiChart.jsx
-│   │   │       └── ExportButtons.jsx
-│   │   │
-│   │   ├── components/
-│   │   │   ├── layout/
-│   │   │   │   ├── Sidebar.jsx
-│   │   │   │   ├── Navbar.jsx
-│   │   │   │   ├── AppLayout.jsx
-│   │   │   │   └── ThemeToggle.jsx        # Bonus: dark mode
-│   │   │   ├── common/
-│   │   │   │   ├── DataTable.jsx
-│   │   │   │   ├── StatusBadge.jsx
-│   │   │   │   ├── SearchFilterBar.jsx
-│   │   │   │   ├── ConfirmDialog.jsx
-│   │   │   │   ├── LoadingSpinner.jsx
-│   │   │   │   └── Pagination.jsx
-│   │   │   └── forms/
-│   │   │       ├── FormInput.jsx
-│   │   │       ├── FormSelect.jsx
-│   │   │       └── FormDatePicker.jsx
-│   │   │
-│   │   ├── hooks/
-│   │   │   ├── useAuth.js
-│   │   │   ├── useDebounce.js
-│   │   │   └── useFetch.js
-│   │   │
-│   │   ├── context/
-│   │   │   └── ThemeContext.jsx
-│   │   │
-│   │   ├── constants/
-│   │   │   ├── roles.js
-│   │   │   └── statusEnums.js
-│   │   │
-│   │   ├── utils/
-│   │   │   ├── formatters.js              # Currency, date formatting
-│   │   │   ├── validators.js
-│   │   │   └── calculations.js            # Frontend ROI/efficiency helpers
-│   │   │
-│   │   ├── routes/
-│   │   │   └── AppRoutes.jsx
-│   │   │
-│   │   ├── styles/
-│   │   │   ├── globals.css
-│   │   │   └── theme.css
-│   │   │
-│   │   ├── App.jsx
-│   │   └── main.jsx                       # (or index.js if CRA)
-│   │
-│   ├── .env
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── index.html                         # if Vite
-│   ├── vite.config.js                     # or webpack config / CRA config
-│   ├── tailwind.config.js
-│   └── package.json
-│
-├── docs/
-│   ├── ER-diagram.png
-│   ├── API-endpoints.md
-│   └── setup-instructions.md
-│
-├── .gitignore
-├── README.md
-└── docker-compose.yml                     # Optional: mongo + backend + frontend
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/truck.svg" alt="TransitOps Logo" width="80" height="80">
+  <h1 align="center">TransitOps</h1>
+  <p align="center">
+    <strong>Next-Generation Fleet Intelligence & AI Dispatch Platform</strong>
+    <br />
+    <br />
+    <a href="#-the-problem">The Problem</a>
+    ·
+    <a href="#-the-solution">The Solution</a>
+    ·
+    <a href="#-key-features">Key Features</a>
+    ·
+    <a href="#-tech-stack">Tech Stack</a>
+    ·
+    <a href="#-getting-started">Getting Started</a>
+  </p>
+</div>
+
+---
+
+## 🚨 The Problem
+
+Modern logistics networks are crippled by fragmented systems. Fleet managers rely on disjointed spreadsheets to track maintenance, safety officers manually audit expiring licenses, and dispatchers assign vehicles based on guesswork rather than geospatial data. The result? High operational costs, delayed deliveries, and dangerous compliance blind spots.
+
+## 💡 The Solution
+
+**TransitOps** is a unified, real-time fleet intelligence platform designed to eliminate operational friction. By combining **geospatial data (PostGIS)**, **natural language AI (Gemini)**, and **real-time automation (Supabase & pg_cron)**, TransitOps transforms fleet management from reactive firefighting into proactive intelligence.
+
+---
+
+## ✨ Key Features (Hackathon Highlights)
+
+### 🤖 Gemini AI Dispatch Copilot
+Why click through 5 menus when you can just type? 
+Our built-in Copilot understands natural language commands like: *"Dispatch TRK-007 with John Doe for 2000kg to Chennai Port"*. The AI parses the intent, calculates a **Risk Score** based on driver/vehicle history, and proposes a safe dispatch plan for one-click approval.
+
+### 🗺️ PostGIS Geospatial Fleet Tracking
+We leverage advanced PostgreSQL PostGIS capabilities to track vehicles. Need a truck ASAP? Enter your coordinates and the system executes a nearest-neighbor spatial query to find the closest **Available** vehicle in milliseconds, instantly calculating ETAs.
+
+### ⚡ Supabase Realtime & Automated Compliance
+The database works for you, not the other way around:
+- **Database-Level Invariants**: Using raw SQL triggers, if a vehicle logs an unresolved maintenance issue, the database *automatically* locks its status to `In Shop`. It is physically impossible to dispatch an unsafe vehicle.
+- **pg_cron Background Jobs**: Automated jobs constantly monitor driver license expiries, flagging them for Safety Officers before compliance is breached.
+- **WebSocket Alerts**: Real-time fleet events push directly to the dashboard without refreshing the page.
+
+### 🎮 Immersive 3D UI
+First impressions matter. We integrated a custom **Three.js** highway particle grid for the login sequence, paired with an industry-standard dark mode **CartoDB** map interface to deliver a stunning, premium user experience.
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend:**
+- React 18 + Vite (TypeScript)
+- Tailwind CSS v4 (Glassmorphism & Custom Theming)
+- Three.js & React Three Fiber (3D Login Visuals)
+- React Leaflet (Live Fleet Map)
+- Lucide React (Icons)
+
+**Backend:**
+- Node.js + Express (TypeScript)
+- Prisma ORM (Schema management & Typed client)
+- Google Gemini API (AI Copilot)
+
+**Database (Supabase / PostgreSQL):**
+- **PostGIS** (Geospatial querying)
+- **pg_cron** (Automated task scheduling)
+- **PL/pgSQL Functions & Triggers** (Strict data integrity & auto-locking)
+- **Row Level Security (RLS)** (Secure access control)
+
+---
+
+## 👥 Role-Based Workflows
+
+TransitOps provides bespoke dashboards based on the user's role:
+- 🚛 **Fleet Manager**: Access the *Fleet Registry* to manage vehicles/drivers, use the *Live Map*, and trigger *AI Dispatches*.
+- 🧑‍✈️ **Driver**: Log in to view active trip assignments and update trip statuses.
+- 🛡️ **Safety Officer**: Monitor the *Audit Log* and view automated compliance alerts.
+- 📊 **Financial Analyst**: Review automated *Fuel & Maintenance* cost aggregations and vehicle profitability metrics.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- A Supabase Project (PostgreSQL)
+- Google Gemini API Key
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/SivakumaranPuhazendhi/Odoo-hackathon-.git
+   cd Odoo-hackathon-
+   ```
+
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   
+   # Create a .env file with your DATABASE_URL and GEMINI_API_KEY
+   
+   # Push the schema and apply database triggers/functions
+   npx prisma db push
+   npx prisma db execute --file prisma/migrations/20260712000000_harden_schema_and_add_features/migration.sql --schema prisma/schema.prisma
+   
+   # Seed the rich demo data
+   npx tsx src/seed.ts
+   
+   # Start the backend server
+   npm run dev
+   ```
+
+3. **Frontend Setup**
+   ```bash
+   cd ../frontend
+   npm install
+   
+   # Start the Vite development server
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173`. 
+5. Log in using any demo account (e.g., `manager@transitops.com`) with the password `password`.
+
+---
+
+## 📸 Screenshots
+
+*(Hackathon tip: Drop your high-res screenshots here before submitting!)*
+
+| 3D Login Experience | Fleet Registry & AI Copilot |
+|:---:|:---:|
+| `<Insert Screenshot>` | `<Insert Screenshot>` |
+
+| Live PostGIS Tracking Map | Maintenance Grid & Audit Logs |
+|:---:|:---:|
+| `<Insert Screenshot>` | `<Insert Screenshot>` |
+
+---
+
+<div align="center">
+  <i>Built with ❤️ for the Hackathon</i>
+</div>
