@@ -3,7 +3,16 @@ import { runRules } from './rules';
 import { eventBus } from '../events/eventBus';
 import { computeRiskScore } from './riskScore';
 
-export async function dispatchTrip(vehicleId: number, driverId: number, cargoWeightKg: number) {
+interface TripExtras {
+  destination?: string;
+  distanceKm?: number;
+  originLat?: number;
+  originLon?: number;
+  destLat?: number;
+  destLon?: number;
+}
+
+export async function dispatchTrip(vehicleId: number, driverId: number, cargoWeightKg: number, extras: TripExtras = {}) {
   // 1. Fetch Vehicle and Driver
   const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
   const driver = await prisma.driver.findUnique({ where: { id: driverId } });
@@ -22,11 +31,9 @@ export async function dispatchTrip(vehicleId: number, driverId: number, cargoWei
   // 3. Dispatch Atomically
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Mock metrics for risk score
       const cargoRatio = cargoWeightKg / vehicle.maxCapacityKg;
       const riskScore = computeRiskScore(8, 30, cargoRatio);
 
-      // Create the trip in Draft state initially
       const trip = await tx.trip.create({
         data: {
           vehicleId,
@@ -34,30 +41,39 @@ export async function dispatchTrip(vehicleId: number, driverId: number, cargoWei
           cargoWeightKg,
           status: 'Draft',
           riskScore,
-          startDate: null
+          startDate: null,
+          destination: extras.destination ?? null,
+          distanceKm: extras.distanceKm ?? null,
+          originLat: extras.originLat ?? null,
+          originLon: extras.originLon ?? null,
+          destLat: extras.destLat ?? null,
+          destLon: extras.destLon ?? null,
         }
       });
 
-      // Call Postgres atomic dispatch function to finalize the transaction
-      await tx.$executeRaw`SELECT dispatch_trip_atomic(${trip.id}, ${vehicleId}, ${driverId}, ${riskScore})`;
+      await tx.$executeRaw`SELECT dispatch_trip_atomic(${trip.id}::int, ${vehicleId}::int, ${driverId}::int, ${riskScore}::float)`;
 
-      // Re-fetch the trip since the function updated it
-      const updatedTrip = await tx.trip.findUnique({ where: { id: trip.id } });
-      
-      if (!updatedTrip) {
-        throw new Error('Trip was not found after atomic dispatch');
-      }
+      const updatedTrip = await tx.trip.findUnique({
+        where: { id: trip.id },
+        include: {
+          vehicle: { select: { licensePlate: true, make: true, model: true } },
+          driver: { include: { user: { select: { name: true } } } }
+        }
+      });
+
+      if (!updatedTrip) throw new Error('Trip not found after atomic dispatch');
 
       return { trip: updatedTrip, riskScore };
     });
 
-    eventBus.emit('TripDispatched', { 
-      tripId: result.trip.id, 
-      vehicleId, 
-      driverId, 
-      riskScore: result.riskScore 
+    eventBus.emit('TripDispatched', {
+      tripId: result.trip.id,
+      vehicleId,
+      driverId,
+      riskScore: result.riskScore,
+      destination: extras.destination,
     });
-    
+
     return { success: true, trip: result.trip };
   } catch (err: any) {
     return { success: false, errors: [err.message] };

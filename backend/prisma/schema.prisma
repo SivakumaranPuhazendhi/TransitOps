@@ -29,13 +29,14 @@ model Vehicle {
 }
 
 model Driver {
-  id               Int      @id @default(autoincrement())
-  userId           Int      @unique
-  user             User     @relation(fields: [userId], references: [id])
-  licenseNumber    String   @unique
-  licenseExpiry    DateTime
-  status           String   @default("Available") // Available, On Trip, Off Duty, Suspended
-  trips            Trip[]
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id])
+  licenseNumber   String   @unique
+  licenseExpiry   DateTime
+  status          String   @default("Available") // Available, On Trip, Off Duty, Suspended
+  suspendedReason String?
+  trips           Trip[]
 }
 
 model Trip {
@@ -49,9 +50,16 @@ model Trip {
   riskScore        Float?
   startDate        DateTime?
   endDate          DateTime?
+  destination      String?   // e.g. "Chennai Port Terminal"
+  distanceKm       Float?    // planned route distance
+  originLat        Float?
+  originLon        Float?
+  destLat          Float?
+  destLon          Float?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
+
 
 model MaintenanceLog {
   id               Int      @id @default(autoincrement())

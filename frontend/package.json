@@ -11,14 +11,21 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.2",
+    "@types/leaflet": "^1.9.21",
+    "@types/three": "^0.185.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.42.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-hot-toast": "^2.6.0",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.1",
     "recharts": "^3.9.2",
     "socket.io-client": "^4.8.3",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.2",

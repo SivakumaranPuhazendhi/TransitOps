@@ -11,7 +11,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { Truck, Activity, CheckCircle, AlertTriangle, Settings } from 'lucide-react';
+import { Truck, Activity, CheckCircle, AlertTriangle, Settings, MapPin } from 'lucide-react';
 
 interface Vehicle { id: number; status: string; }
 interface Trip { id: number; status: string; }
@@ -21,6 +21,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
 import { supabase } from '../lib/supabase';
+import { LiveMap } from '../components/LiveMap';
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -175,6 +176,13 @@ export default function Dashboard() {
         </div>
       )}
 
+      {user?.role === 'Fleet Manager' && (
+        <div className="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2"><MapPin className="w-5 h-5"/> Live Fleet Map</h3>
+          <LiveMap />
+        </div>
+      )}
+
       {user?.role === 'Safety Officer' && safetyMetrics && (
         <div className="grid gap-4 md:grid-cols-3 mb-8">
           <div className="p-6 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between">
@@ -198,10 +206,36 @@ export default function Dashboard() {
                <tbody>
                  {safetyMetrics.expiringDrivers.map((d: any) => (
                    <tr key={d.id} className="border-b border-border/50">
-                     <td className="py-2">{d.user.name}</td><td className="py-2">{d.licenseNumber}</td><td className="py-2 text-destructive">{new Date(d.licenseExpiry).toLocaleDateString()}</td>
+                     <td className="py-2">{d.full_name}</td><td className="py-2">{d.licenseNumber}</td><td className="py-2 text-destructive">{new Date(d.licenseExpiry).toLocaleDateString()}</td>
                    </tr>
                  ))}
                  {safetyMetrics.expiringDrivers.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-muted-foreground">No drivers expiring soon.</td></tr>}
+               </tbody>
+             </table>
+          </div>
+          <div className="col-span-3 p-6 rounded-xl border border-border bg-card shadow-sm mt-4">
+             <div className="flex justify-between items-center mb-4">
+               <h3 className="text-lg font-medium">Auto-Suspended Drivers (pg_cron)</h3>
+               <button onClick={async () => {
+                 try {
+                   await fetch('http://localhost:3001/api/dashboard/safety-metrics/run-compliance', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+                   fetch('http://localhost:3001/api/dashboard/safety-metrics', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}).then(r => r.json()).then(setSafetyMetrics);
+                 } catch (err) { console.error(err); }
+               }} className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 rounded text-sm font-medium">
+                 Run Compliance Check Now
+               </button>
+             </div>
+             <table className="w-full text-sm text-left">
+               <thead className="text-muted-foreground border-b border-border">
+                 <tr><th className="py-2">Driver</th><th className="py-2">License #</th><th className="py-2">Reason</th></tr>
+               </thead>
+               <tbody>
+                 {safetyMetrics.autoSuspended?.map((d: any) => (
+                   <tr key={d.id} className="border-b border-border/50">
+                     <td className="py-2">{d.user?.name || 'Unknown'}</td><td className="py-2">{d.licenseNumber}</td><td className="py-2 text-destructive">{d.suspendedReason}</td>
+                   </tr>
+                 ))}
+                 {(!safetyMetrics.autoSuspended || safetyMetrics.autoSuspended.length === 0) && <tr><td colSpan={3} className="py-4 text-center text-muted-foreground">No drivers auto-suspended.</td></tr>}
                </tbody>
              </table>
           </div>

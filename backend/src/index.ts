@@ -41,6 +41,12 @@ app.get('/api/trigger-predictive', async (req, res) => {
 
 app.use('/api', routes);
 
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('[Global Error Handler]', err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
+
 httpServer.listen(PORT, () => {
   console.log(`TransitOps Backend running on http://localhost:${PORT}`);
 });
