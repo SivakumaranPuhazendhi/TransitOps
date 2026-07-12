@@ -128,20 +128,6 @@ TransitOps provides bespoke dashboards based on the user's role:
 
 ---
 
-## 📸 Screenshots
-
-*(Hackathon tip: Drop your high-res screenshots here before submitting!)*
-
-| 3D Login Experience | Fleet Registry & AI Copilot |
-|:---:|:---:|
-| `<Insert Screenshot>` | `<Insert Screenshot>` |
-
-| Live PostGIS Tracking Map | Maintenance Grid & Audit Logs |
-|:---:|:---:|
-| `<Insert Screenshot>` | `<Insert Screenshot>` |
-
----
-
 <div align="center">
   <i>Built with ❤️ for the Hackathon</i>
 </div>
