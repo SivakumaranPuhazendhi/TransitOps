@@ -20,6 +20,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -31,9 +32,10 @@ export default function Dashboard() {
   const [financialMetrics, setFinancialMetrics] = useState<any>(null);
 
   useEffect(() => {
+    // Initial fetch
     fetch('http://localhost:3001/api/vehicles').then(r => r.json()).then(setVehicles).catch(console.error);
-    // Fetching all trips for stats (assume we add this endpoint or just mock for demo)
-    // For now we will mock the trips data if the endpoint isn't ready
+    
+    // Mock trips data
     setTrips([
       { id: 1, status: 'Completed' },
       { id: 2, status: 'Dispatched' },
@@ -48,6 +50,27 @@ export default function Dashboard() {
     } else if (user?.role === 'Financial Analyst') {
       fetch('http://localhost:3001/api/dashboard/financial-metrics').then(r => r.json()).then(setFinancialMetrics).catch(console.error);
     }
+
+    // Supabase Realtime Subscription
+    const vehicleSubscription = supabase
+      .channel('public:Vehicle')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Vehicle' }, (payload) => {
+        console.log('Realtime change received!', payload);
+        // Refresh the vehicles list
+        fetch('http://localhost:3001/api/vehicles').then(r => r.json()).then(setVehicles).catch(console.error);
+        
+        // Also refresh the specific role-based views as they depend on vehicles
+        if (user?.role === 'Fleet Manager') {
+          fetch('http://localhost:3001/api/dashboard/needs-attention').then(r => r.json()).then(setNeedsAttention).catch(console.error);
+        } else if (user?.role === 'Safety Officer') {
+          fetch('http://localhost:3001/api/dashboard/safety-metrics').then(r => r.json()).then(setSafetyMetrics).catch(console.error);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(vehicleSubscription);
+    };
   }, [user]);
 
   const triggerDiagnostics = async () => {
@@ -139,7 +162,7 @@ export default function Dashboard() {
             <div className="space-y-2">
               <h4 className="font-medium text-sm text-muted-foreground">Expiring Licenses (&lt;7 days)</h4>
               {needsAttention.expiringLicenses.length === 0 ? <p className="text-sm">None</p> : needsAttention.expiringLicenses.map((d: any) => (
-                <div key={d.id} className="text-sm border p-2 rounded-md bg-background">{d.user.name} - Exp: {new Date(d.licenseExpiry).toLocaleDateString()}</div>
+                <div key={d.id} className="text-sm border p-2 rounded-md bg-background">{d.full_name} - Exp: {new Date(d.licenseExpiry).toLocaleDateString()}</div>
               ))}
             </div>
             <div className="space-y-2">
